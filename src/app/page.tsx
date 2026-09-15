@@ -890,10 +890,14 @@ export default function Home() {
                     </span>
                   </div>
                   <p className="mt-3 text-sm leading-relaxed text-zinc-600 dark:text-zinc-400">
-                    Laboratorios de prueba de{" "}
-                    <strong>Arquitectura Kubernetes</strong> con{" "}
-                    <strong>DevSecOps</strong> y <strong>CI/CD</strong> desde
-                    fases iniciales.
+                    Diseñé e implementé pruebas de concepto para la migración
+                    de arquitectura empresarial hacia entornos orquestados con{" "}
+                    <strong>Kubernetes</strong>. Integré prácticas{" "}
+                    <strong>DevSecOps</strong> desde las fases iniciales del
+                    ciclo de vida del desarrollo para garantizar la seguridad
+                    del código, y automaticé flujos de trabajo mediante la
+                    construcción y validación de pipelines{" "}
+                    <strong>CI/CD</strong> orientados a la mejora continua.
                   </p>
                   <div className="mt-3 flex flex-wrap gap-1.5">
                     <span className="rounded-full bg-zinc-900 px-2.5 py-1 text-xs font-semibold text-white dark:bg-zinc-800">
