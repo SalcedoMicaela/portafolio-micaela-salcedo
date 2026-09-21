@@ -1,298 +1,285 @@
-const PDFDocument = require('pdfkit');
 const fs = require('fs');
 const path = require('path');
+const PDFKit = require('pdfkit');
 
 const outDir = path.join(__dirname, 'public');
 if (!fs.existsSync(outDir)) fs.mkdirSync(outDir, { recursive: true });
 const out = path.join(outDir, 'SalcedoMicaela_CV.pdf');
 const outLegacy = path.join(outDir, 'HojaDeVida.pdf');
 
-const doc = new PDFDocument({ size: 'A4', margins: { top: 0, bottom: 0, left: 0, right: 0 } });
+// Harvard sobrio: una sola columna, negro sobre blanco, Helvetica — optimizado 2 páginas
+const doc = new PDFKit({ size: 'A4', margins: { top: 30, bottom: 28, left: 36, right: 36 } });
 const stream = fs.createWriteStream(out);
 doc.pipe(stream);
 stream.on('finish', () => {
-  try { fs.copyFileSync(out, outLegacy); console.log('PDF legacy copiado en', outLegacy); } catch (e) { console.error('copy error', e); }
+  try { fs.copyFileSync(out, outLegacy); console.log('PDF legacy copiado en', outLegacy); } catch (e) { console.error(e); }
 });
 
-// --- Colors & Styles (llamativo) ---
-const violet = '#7C3AED';
-const violetDark = '#6D28D9';
-const fuchsia = '#EC4899';
-const violetLight = '#F5F3FF';
-const dark = '#18181B';
-const gray = '#71717A';
-const gray2 = '#27272A';
-const grayLight = '#FAFAFA';
-const borderLight = '#E4E4E7';
+const W = 595;
+const Mw = W - 72; // usable width (36+36 margins)
+const dark = '#000000';
+const gray = '#222222';
+const grayLight = '#444444';
 
-const W = 595; // A4 width
-const H = 842;
+let y = doc.y;
 
-// Helper to draw pills/tags
-function drawPills(texts, x, y, maxW, opts = {}) {
-  const padX = 7, padY = 3, gap = 5;
-  const fontSize = opts.fontSize || 6.5;
-  const bg = opts.bg || violet;
-  const color = opts.color || '#FFFFFF';
-  let cx = x, cy = y;
-  doc.fontSize(fontSize).font('Helvetica-Bold');
-  texts.forEach(t => {
-    const w = doc.widthOfString(t) + padX * 2;
-    const h = 14;
-    if (cx + w > x + maxW) { cx = x; cy += h + gap; }
-    if (cy + h > H - 30) return; // avoid overflow
-    doc.roundedRect(cx, cy, w, h, 7).fill(bg);
-    doc.fillColor(color).text(t, cx + padX, cy + 4.2, { lineBreak: false });
-    cx += w + gap;
-  });
-  return cy + 14 + 4;
+// Helpers
+function addPageIfNeeded(needed) {
+  if (doc.y + needed > 805) {
+    doc.addPage();
+    return true;
+  }
+  return false;
 }
 
-// Section header llamativo (violet badge + line)
-function section(title, y, icon) {
-  // check page overflow
-  if (y > H - 80) { doc.addPage(); y = 40; }
-  const badgeW = doc.widthOfString(title.toUpperCase()) + 22;
-  doc.roundedRect(30, y, badgeW, 18, 9).fill(violet);
-  doc.fillColor('#FFFFFF').fontSize(7.5).font('Helvetica-Bold').text(title.toUpperCase(), 30 + 11, y + 5.8);
-  // line under
-  doc.moveTo(30 + badgeW + 8, y + 9).lineTo(W - 30, y + 9).strokeColor(borderLight).lineWidth(1).stroke();
-  doc.fillColor(dark);
-  return y + 24;
+function hr() {
+  const curY = doc.y;
+  doc.moveTo(36, curY).lineTo(W - 36, curY).strokeColor('#000000').lineWidth(0.4).stroke();
+  doc.moveDown(0.05);
 }
 
-function itemCard(opts) {
-  // opts: { title, subtitle, date, desc, bullets, tags, y }
-  let y = opts.y;
-  if (y > H - 90) { doc.addPage(); y = 40; }
-  const cardX = 30, cardW = W - 60;
-  const startY = y;
-  // Card background
-  // We'll draw after measuring height; easier: just text flow without card bg for simplicity except left violet border
-  // left accent
-  doc.save();
-  // We'll estimate height after writing then draw border
-  let contentY = y;
-  // Title
-  doc.fontSize(9).font('Helvetica-Bold').fillColor(dark).text(opts.title, cardX + 10, contentY, { width: cardW - 90, lineBreak: true });
-  const titleH = doc.heightOfString(opts.title, { width: cardW - 90 });
-  // date on right
-  if (opts.date) {
-    const dateW = 110;
-    doc.fontSize(6.5).font('Helvetica-Bold').fillColor('#FFFFFF');
-    const dw = doc.widthOfString(opts.date) + 12;
-    const dx = W - 30 - dw;
-    const dy = contentY;
-    doc.roundedRect(dx, dy, dw, 12, 6).fill(opts.dateBg || '#10B981');
-    doc.fillColor('#FFFFFF').text(opts.date, dx + 6, dy + 3, { lineBreak: false });
-  }
-  contentY += Math.max(titleH, 12) + 2;
-  if (opts.subtitle) {
-    doc.fontSize(7.5).font('Helvetica-Oblique').fillColor(violet).text(opts.subtitle, cardX + 10, contentY, { width: cardW - 20 });
-    contentY += doc.heightOfString(opts.subtitle, { width: cardW - 20 }) + 3;
-  }
-  if (opts.desc) {
-    doc.fontSize(7.5).font('Helvetica').fillColor(gray2).text(opts.desc, cardX + 10, contentY, { width: cardW - 20, align: 'justify' });
-    contentY += doc.heightOfString(opts.desc, { width: cardW - 20 }) + 4;
-  }
-  if (opts.bullets) {
-    opts.bullets.forEach(b => {
-      doc.fontSize(7).font('Helvetica').fillColor(gray2).text('•  ' + b, cardX + 14, contentY, { width: cardW - 24 });
-      contentY += doc.heightOfString('•  ' + b, { width: cardW - 24 }) + 1.5;
-    });
-    contentY += 1;
-  }
-  if (opts.tags && opts.tags.length) {
-    doc.fontSize(6).font('Helvetica-Bold').fillColor(gray);
-    // draw pills
-    const nextY = drawPills(opts.tags, cardX + 10, contentY, cardW - 20, { bg: '#18181B', fontSize: 6 });
-    contentY = nextY;
-  }
-  const cardH = contentY - startY + 8;
-  // draw card border + left violet accent
-  doc.roundedRect(cardX, startY - 4, cardW, cardH, 8).strokeColor(borderLight).lineWidth(0.6).stroke();
-  doc.roundedRect(cardX, startY - 4, 4, cardH, 2).fill(violet);
-  doc.restore();
-  return contentY + 10;
+function sectionTitle(title) {
+  addPageIfNeeded(22);
+  doc.font('Helvetica-Bold').fontSize(7.6).fillColor(dark).text(title.toUpperCase(), { characterSpacing: 0.7 });
+  doc.moveDown(0.05);
+  hr();
 }
 
-// ================= HEADER LLAMATIVO =================
-doc.rect(0, 0, W, 98).fill(violet);
-// subtle gradient simulation: top accent bar fuchsia
-doc.rect(0, 0, W, 4).fill(fuchsia);
-doc.rect(0, 94, W, 4).fill(fuchsia);
+function subTitle(text) {
+  doc.font('Helvetica-Bold').fontSize(7.5).fillColor(dark).text(text);
+}
 
-// Nombre
-doc.fillColor('#FFFFFF').font('Helvetica-Bold').fontSize(24).text('MICAELA STEFANIA', 0, 18, { align: 'center', width: W });
-doc.fillColor('#FFFFFF').font('Helvetica-Bold').fontSize(24).text('SALCEDO CHICHANDE', 0, 40, { align: 'center', width: W });
+function bodyText(text, opts = {}) {
+  doc.font('Helvetica').fontSize(7.4).fillColor(gray).text(text, { align: 'justify', lineGap: 0.2, ...opts });
+}
 
-// Subtitle
-doc.fillColor('#EDE9FE').font('Helvetica-Bold').fontSize(9).text('Ingenieria de Software  |  Full Stack Developer  |  Quito, Ecuador', 0, 64, { align: 'center', width: W });
+function bullet(text) {
+  addPageIfNeeded(12);
+  doc.font('Helvetica').fontSize(7.4).fillColor(gray).text('•  ' + text, { indent: 8, align: 'left', lineGap: 0.15 });
+  doc.moveDown(0.04);
+}
 
-// Contact row (icon style with text)
-const contact = 'micaelasalcedo8vof@gmail.com  •  mssalcedo2@espe.edu.ec  •  0962846565  •  github.com/SalcedoMicaela  •  linkedin.com/in/micaela-salcedo-07a693268';
-doc.fillColor('#FFFFFF').font('Helvetica').fontSize(6.5).text(contact, 0, 78, { align: 'center', width: W });
-doc.fillColor('#FDE68A').font('Helvetica-Bold').fontSize(7).text('Portafolio: https://portafolio-micaela-salcedo.vercel.app/', 0, 88, { align: 'center', width: W, link: 'https://portafolio-micaela-salcedo.vercel.app/' });
+function bulletBoldTitle(title, desc) {
+  addPageIfNeeded(12);
+  doc.font('Helvetica-Bold').fontSize(7.4).fillColor(dark).text(title + ': ', { continued: true });
+  doc.font('Helvetica').fillColor(gray).text(desc, { lineGap: 0.15 });
+  doc.moveDown(0.04);
+}
 
-// ================= CONTENT START =================
-let y = 112;
+function linkLine(label, url) {
+  doc.font('Helvetica-Bold').fontSize(7.6).fillColor(dark).text(label + ': ', { continued: true });
+  doc.font('Helvetica').fontSize(7.6).fillColor('#000000').text(url, { link: url, underline: false, lineGap: 0.15 });
+  doc.moveDown(0.04);
+}
 
-// Perfil
-y = section('Perfil', y);
-doc.fontSize(7.8).font('Helvetica').fillColor(gray2).text('Estudiante de Ingenieria de Software (ESPE, 2022 - en curso), creativa y resolutiva con fuerte liderazgo y aprendizaje continuo. Apasionada por backend y frontend: construyo soluciones practicas e innovadoras - desde plataformas sociales hasta sistemas distribuidos con colas, GraphQL y Kubernetes. Experiencia en microservicios, DevSecOps y CI/CD bajo principios SOLID y ACID. Busco aportar impacto desde el dia uno.', 30, y, { width: W - 60, align: 'justify' });
-y += doc.heightOfString('Estudiante de Ingenieria de Software (ESPE, 2022 - en curso), creativa y resolutiva con fuerte liderazgo y aprendizaje continuo. Apasionada por backend y frontend: construyo soluciones practicas e innovadoras - desde plataformas sociales hasta sistemas distribuidos con colas, GraphQL y Kubernetes. Experiencia en microservicios, DevSecOps y CI/CD bajo principios SOLID y ACID. Busco aportar impacto desde el dia uno.', { width: W - 60 }) + 8;
-
-// Educacion
-y = section('Educacion', y);
-y = itemCard({
-  title: 'Ingenieria de Software',
-  subtitle: 'Universidad de las Fuerzas Armadas - ESPE  |  Dpto. Ciencias de la Computacion  •  Club de Software',
-  date: '2022 - En curso',
-  desc: null,
-  bullets: ['Enfoque en desarrollo full stack, arquitectura y sistemas distribuidos. Participacion en hackathons, CTF y proyectos con impacto social.'],
-  tags: ['ESPE', 'Quito'],
-  y,
-  dateBg: violet
-});
-y = itemCard({
-  title: 'Educacion Secundaria',
-  subtitle: 'Colegio 24 de Mayo',
-  date: 'Egresada 2021',
-  desc: null,
-  bullets: null,
-  tags: [],
-  y,
-  dateBg: gray
-});
-
-// Experiencia (AHORA 2 items: IESS + FEFAST)
-y = section('Experiencia', y);
-y = itemCard({
-  title: 'Pasante - Area de Arquitectura y Soluciones',
-  subtitle: 'IESS - Instituto Ecuatoriano de Seguridad Social  |  Quito',
-  date: 'Abr - Jun 2026  •  3 meses',
-  desc: 'Pasantia en laboratorios de arquitectura empresarial. Disene e implemente pruebas de concepto para migracion hacia entornos orquestados.',
-  bullets: [
-    'Pruebas de concepto de arquitectura basada en Kubernetes (orquestacion y escalabilidad)',
-    'Metodologia DevSecOps desde fases iniciales del ciclo de vida del desarrollo',
-    'Construccion y validacion de pipelines CI/CD orientados a mejora continua'
-  ],
-  tags: ['Kubernetes', 'DevSecOps', 'CI/CD', 'Arquitectura'],
-  y,
-  dateBg: '#059669'
-});
-y = itemCard({
-  title: 'Colaboradora - FEFAST',
-  subtitle: 'Plataforma Sindrome de Turner  |  Apoyo e informacion accesible',
-  date: 'Sep 2025 - Feb 2026  •  6 meses',
-  desc: 'Plataforma de apoyo e informacion con enfoque accesible, empatico y colaborativo para familias y comunidad FEFAST.',
-  bullets: [
-    'Desarrollo frontend con React enfocado en accesibilidad y experiencia empatica',
-    'Backend Node.js + PostgreSQL para gestion de contenidos e informacion',
-    'Trabajo colaborativo y comunicacion constante con el equipo'
-  ],
-  tags: ['React', 'Node.js', 'PostgreSQL', 'Accesibilidad'],
-  y,
-  dateBg: '#7C3AED'
-});
-
-// Proyectos Destacados (TODO lo de la pagina: 5 proyectos)
-y = section('Proyectos Destacados', y);
-y = itemCard({
-  title: 'EntregaExpress_P2 - Sistema de Gestion Logistica Distribuido  [ Destacado ]',
-  subtitle: 'Java 21  •  Spring Boot 4  •  Microservicios  •  RabbitMQ  •  GraphQL  •  Kubernetes  •  PostgreSQL  |  github.com/AxelHerrera4/EntregaExpress_P2',
-  date: '2025',
-  desc: 'Plataforma empresarial con API Gateway (8080), Auth (8081), Billing (8082), Fleet (8083) y Pedido Service (8084). Base de datos por servicio, JWT, Redis Cache, RabbitMQ, Strategy/Factory y despliegue en Kubernetes.',
-  bullets: ['Colaboracion 4 personas - rol desarrollo y documentacion', 'Orquestacion: Pedido -> Billing (tarifa Strategy) -> Fleet (asignacion) -> Auth (JWT)'],
-  tags: ['Java', 'Microservicios', 'RabbitMQ', 'GraphQL', 'K8s'],
-  y
-});
-y = itemCard({
-  title: 'Microservicios E-commerce - RabbitMQ',
-  subtitle: 'Java  •  Spring Boot 3.5  •  Spring AMQP  •  PostgreSQL  •  Docker  |  github.com/JairoBonilla2004/microservices-ecommerce-rabbitmq',
-  date: '2025',
-  desc: 'Sistema event-driven: Order Service (8080) <-> Inventory Service (8081) mediante Topic Exchanges. Consistencia ACID por servicio y patrones SOLID.',
-  bullets: ['Flujo: OrderCreated -> StockReserved/Rejected -> CONFIRMED/CANCELLED', 'Swagger/OpenAPI, health checks y Docker Compose'],
-  tags: ['Event-Driven', 'RabbitMQ', 'Docker', 'SOLID', 'ACID'],
-  y
-});
-y = itemCard({
-  title: 'Sistema de Votaciones - Conecta Impacto',
-  subtitle: 'Next.js  •  React  •  Vercel  |  votaciones-ten.vercel.app  •  En produccion',
-  date: '2025',
-  desc: 'Plataforma web para gestionar votaciones universitarias: registro de participantes, validacion y votacion en tiempo real. Desplegado en Vercel.',
-  bullets: null,
-  tags: ['Next.js', 'React', 'Vercel'],
-  y
-});
-y = itemCard({
-  title: 'CodeDucks - Hackathon ConectaImpacto 2025  [ Finalista TOP 5 / 25 ]',
-  subtitle: 'Prototipado  •  Innovacion Social  |  github.com/AxelHerrera4/Hackaton  •  ConQuito 4-5 oct',
-  date: 'Oct 2025',
-  desc: 'Prototipo para gestion de informacion y validacion de indicadores en organizaciones sociales. Finalistas entre 25 equipos.',
-  bullets: null,
-  tags: ['Prototipado', 'TOP 5'],
-  y
-});
-y = itemCard({
-  title: 'Capture The Flag - Club de Software ESPE  [ Finalista ]',
-  subtitle: 'Ciberseguridad  •  ESPE',
-  date: '2024',
-  desc: 'Competencia de ciberseguridad: retos de seguridad, analisis y resolucion. instagram.com/p/C5CU2G5uvID/',
-  bullets: null,
-  tags: ['CTF', 'Ciberseguridad'],
-  y
-});
-
-// Habilidades Tecnicas - llamativo con pills
-y = section('Habilidades Tecnicas', y);
-// Lenguajes
-doc.fontSize(7.5).font('Helvetica-Bold').fillColor(violet).text('LENGUAJES', 30, y);
-y += 10;
-y = drawPills(['C', 'C++', 'Java', 'PHP', 'JavaScript', 'Python', 'SQL', 'NoSQL'], 30, y, W - 60, { bg: '#FFFFFF', color: dark });
-doc.save(); doc.roundedRect(30, y - 18 - 10, W - 60, y - (y - 18 - 10) - 4, 8).strokeColor(borderLight).lineWidth(0.5).stroke(); doc.restore();
-y += 6;
-// Tecnologias
-doc.fontSize(7.5).font('Helvetica-Bold').fillColor(violet).text('TECNOLOGIAS', 30, y);
-y += 10;
-y = drawPills(['React', 'Node.js', 'Docker', 'Selenium', 'Postman', 'JMeter', 'Oracle', 'PostgreSQL', 'Jira', 'Cassandra', 'Android Studio', 'GitHub'], 30, y, W - 60, { bg: violet, color: '#FFFFFF' });
-y += 6;
-// Practicas Modernas
-doc.fontSize(7.5).font('Helvetica-Bold').fillColor('#059669').text('PRACTICAS MODERNAS', 30, y);
-doc.fontSize(6).font('Helvetica').fillColor(gray).text('Implementando en proyectos recientes', W - 30 - 130, y, { width: 130, align: 'right' });
-y += 10;
-y = drawPills(['CI/CD', 'DevOps', 'DevSecOps', 'SOLID', 'ACID', 'GitHub Actions', 'GitLab CI', 'Pipelines', 'Docker', 'Kubernetes', 'RabbitMQ', 'GraphQL', 'Redis'], 30, y, W - 60, { bg: '#ECFDF5', color: '#065F46' });
-y += 4;
-doc.fontSize(6.5).font('Helvetica-Oblique').fillColor(gray).text('Entrega de codigo mas rapida y de calidad con pipelines en GitHub & GitLab.', 30, y, { width: W - 60 });
-y += 12;
-
-// Habilidades Blandas
-y = section('Habilidades Blandas', y);
-const soft = [
-  'Creatividad - soluciones originales con impacto real',
-  'Liderazgo - guio equipos con empatia y energia',
-  'Trabajo en equipo - colaboro y construyo donde cada persona brilla',
-  'Aprendizaje continuo - cada reto es oportunidad de crecer',
-  'Resolucion de problemas - logica, creatividad y foco en resultados',
-  'Responsabilidad - compromiso y relaciones interpersonales'
+// ================= HEADER =================
+doc.font('Helvetica-Bold').fontSize(14.5).fillColor(dark).text('MICAELA STEFANIA SALCEDO CHICHANDE', { align: 'center' });
+doc.moveDown(0.05);
+doc.font('Helvetica').fontSize(8).fillColor(grayLight).text('Ingeniera de Software  |  Full Stack Developer  |  Quito, Ecuador', { align: 'center' });
+doc.moveDown(0.06);
+// Contact - single centered line with links
+const contactParts = [
+  { t: 'micaelasalcedo8vof@gmail.com', link: 'mailto:micaelasalcedo8vof@gmail.com' },
+  { t: 'mssalcedo2@espe.edu.ec', link: 'mailto:mssalcedo2@espe.edu.ec' },
+  { t: '0962846565', link: 'tel:+593962846565' },
+  { t: 'github.com/SalcedoMicaela', link: 'https://github.com/SalcedoMicaela' },
+  { t: 'linkedin.com/in/micaela-salcedo-07a693268', link: 'https://www.linkedin.com/in/micaela-salcedo-07a693268' },
+  { t: 'portafolio-micaela-salcedo.vercel.app', link: 'https://portafolio-micaela-salcedo.vercel.app/' },
 ];
-soft.forEach(s => {
-  if (y > H - 40) { doc.addPage(); y = 40; }
-  doc.fontSize(7).font('Helvetica').fillColor(gray2).text('◆  ' + s, 34, y, { width: W - 68 });
-  y += doc.heightOfString('◆  ' + s, { width: W - 68 }) + 2;
-});
-y += 4;
+// Render contact as centered text with links - manual
+doc.font('Helvetica').fontSize(7.6).fillColor(gray);
+let contactText = 'micaelasalcedo8vof@gmail.com  |  mssalcedo2@espe.edu.ec  |  0962846565  |  github.com/SalcedoMicaela  |  linkedin.com/in/micaela-salcedo-07a693268  |  portafolio-micaela-salcedo.vercel.app';
+doc.text(contactText, { align: 'center', lineGap: 0.2 });
+doc.moveDown(0.05);
+hr();
+doc.moveDown(0.04);
 
-// Idiomas
-y = section('Idiomas', y);
-doc.fontSize(7.5).font('Helvetica').fillColor(gray2).text('Espanol nativo  •  Ingles intermedio  |  Disponibilidad: Quito, Ecuador  •  Modalidad: Presencial / Remoto', 30, y, { width: W - 60 });
-y += 14;
+// ================= PERFIL PROFESIONAL =================
+sectionTitle('Perfil profesional');
+bodyText('Soy Ingeniera de Software de la Universidad de las Fuerzas Armadas ESPE, con experiencia en desarrollo Full Stack, arquitectura de software y sistemas distribuidos. Me interesa crear soluciones tecnológicas prácticas, escalables e innovadoras, combinando conocimientos de desarrollo backend y frontend.');
+doc.moveDown(0.05);
+bodyText('He trabajado con microservicios, integración de servicios, automatización de procesos y prácticas DevOps/DevSecOps. En mis proyectos he utilizado tecnologías como Java, Spring Boot, React, Node.js, PostgreSQL, RabbitMQ, GraphQL, Docker y Kubernetes.');
+doc.moveDown(0.05);
+bodyText('Me caracterizo por mi creatividad, capacidad para resolver problemas, liderazgo, trabajo en equipo y aprendizaje continuo. Busco aportar mis conocimientos, asumir nuevos retos y seguir creciendo profesionalmente en el área del desarrollo de software.');
+doc.moveDown(0.04);
 
-// Footer lamativo
-if (y > H - 50) { doc.addPage(); y = H - 50; }
-doc.rect(0, H - 28, W, 28).fill(dark);
-doc.fillColor('#FFFFFF').font('Helvetica').fontSize(6).text('micaelasalcedo8vof@gmail.com  •  mssalcedo2@espe.edu.ec  •  github.com/SalcedoMicaela  •  Portafolio: https://portafolio-micaela-salcedo.vercel.app/', 0, H - 18, { align: 'center', width: W });
-doc.fillColor('#A78BFA').font('Helvetica-Bold').fontSize(5.5).text('CV generado automaticamente - SalcedoMicaela_CV.pdf', 0, H - 10, { align: 'center', width: W });
+// ================= EDUCACIÓN =================
+sectionTitle('Educación');
+subTitle('Ingeniería de Software');
+doc.font('Helvetica').fontSize(7.6).fillColor(grayLight).text('Universidad de las Fuerzas Armadas ESPE  —  Quito, Ecuador  |  2022 – 2026');
+doc.moveDown(0.05);
+bullet('Me formé en desarrollo Full Stack, arquitectura de software y sistemas distribuidos.');
+bullet('Participé en el Club de Software.');
+bullet('Participé en hackathons, competencias CTF y proyectos tecnológicos con impacto social.');
+bullet('Fortalecí mis conocimientos en diseño, desarrollo e integración de soluciones de software.');
+doc.moveDown(0.04);
+subTitle('Educación secundaria');
+doc.font('Helvetica').fontSize(7.6).fillColor(grayLight).text('Colegio 24 de Mayo  |  Egresada — 2021');
+doc.moveDown(0.04);
+
+// ================= EXPERIENCIA PROFESIONAL =================
+sectionTitle('Experiencia profesional');
+
+subTitle('Pasante — Área de Arquitectura y Soluciones');
+doc.font('Helvetica-Oblique').fontSize(7.6).fillColor(grayLight).text('Instituto Ecuatoriano de Seguridad Social (IESS)  —  Quito, Ecuador  |  Abril – junio de 2026  |  3 meses');
+doc.moveDown(0.06);
+bodyText('Durante mi pasantía participé en laboratorios de arquitectura empresarial, donde diseñé e implementé pruebas de concepto orientadas a la migración hacia entornos orquestados.');
+doc.moveDown(0.06);
+doc.font('Helvetica-Bold').fontSize(7.6).fillColor(dark).text('Responsabilidades y aportes:');
+doc.moveDown(0.05);
+bullet('Diseñé y desarrollé pruebas de concepto basadas en Kubernetes, enfocadas en la orquestación y escalabilidad.');
+bullet('Apliqué prácticas DevSecOps desde las primeras fases del ciclo de vida del desarrollo.');
+bullet('Construí y validé pipelines CI/CD orientados a la automatización y mejora continua.');
+bullet('Exploré alternativas de arquitectura para entornos distribuidos y orquestados.');
+bullet('Fortalecí mis conocimientos sobre automatización, despliegue y arquitectura empresarial.');
+doc.moveDown(0.04);
+doc.font('Helvetica-Bold').fontSize(7.6).fillColor(dark).text('Tecnologías: ', { continued: true });
+doc.font('Helvetica').fontSize(7.6).fillColor(gray).text('Kubernetes  ·  DevSecOps  ·  CI/CD  ·  QA');
+doc.moveDown(0.06);
+
+subTitle('Colaboradora — FEFAST');
+doc.font('Helvetica-Oblique').fontSize(7.6).fillColor(grayLight).text('Plataforma Síndrome de Turner  |  Septiembre de 2025 – febrero de 2026  |  6 meses');
+doc.moveDown(0.06);
+bodyText('Colaboré en el desarrollo de una plataforma de apoyo e información accesible para las familias y la comunidad FEFAST, enfocándome en la empatía, la accesibilidad y el trabajo colaborativo.');
+doc.moveDown(0.06);
+doc.font('Helvetica-Bold').fontSize(7.6).fillColor(dark).text('Responsabilidades y aportes:');
+doc.moveDown(0.05);
+bullet('Desarrollé interfaces frontend con React, considerando la accesibilidad y la experiencia del usuario.');
+bullet('Implementé funcionalidades backend utilizando Node.js.');
+bullet('Gestioné y almacené información mediante PostgreSQL.');
+bullet('Trabajé de manera coordinada con el equipo para integrar funcionalidades y atender las necesidades del proyecto.');
+bullet('Participé en la construcción de una solución tecnológica orientada a facilitar el acceso a la información.');
+doc.moveDown(0.04);
+doc.font('Helvetica-Bold').fontSize(7.6).fillColor(dark).text('Tecnologías: ', { continued: true });
+doc.font('Helvetica').fontSize(7.6).fillColor(gray).text('React  ·  Node.js  ·  PostgreSQL  ·  Accesibilidad');
+doc.moveDown(0.04);
+
+// ================= PROYECTOS DESTACADOS =================
+sectionTitle('Proyectos destacados');
+
+subTitle('EntregaExpress_P2 — Sistema de Gestión Logística Distribuido');
+doc.font('Helvetica').fontSize(7.6).fillColor(grayLight).text('2025  |  Java 21  ·  Spring Boot 4  ·  Microservicios  ·  RabbitMQ  ·  GraphQL  ·  Kubernetes  ·  PostgreSQL  ·  JWT  ·  Redis');
+doc.font('Helvetica').fontSize(7.6).fillColor(grayLight).text('Repositorio: github.com/AxelHerrera4/EntregaExpress_P2', { link: 'https://github.com/AxelHerrera4/EntregaExpress_P2' });
+doc.moveDown(0.06);
+bodyText('Participé en el desarrollo y la documentación de una plataforma empresarial distribuida, compuesta por varios microservicios para gestionar pedidos, facturación, flota y autenticación.');
+doc.moveDown(0.05);
+doc.font('Helvetica-Bold').fontSize(7.6).fillColor(dark).text('Mis aportes y características del proyecto:');
+doc.moveDown(0.04);
+bullet('Colaboré con un equipo de cuatro integrantes en las actividades de desarrollo y documentación.');
+bullet('Trabajé con los siguientes servicios: API Gateway — puerto 8080, Auth Service — puerto 8081, Billing Service — puerto 8082, Fleet Service — puerto 8083, Pedido Service — puerto 8084.');
+bullet('Implementé y trabajé con una arquitectura que utiliza una base de datos independiente por servicio.');
+bullet('Utilicé autenticación mediante JWT.');
+bullet('Trabajé con comunicación asíncrona mediante RabbitMQ.');
+bullet('Incorporé Redis Cache y los patrones de diseño Strategy y Factory.');
+bullet('Participé en el despliegue y la orquestación mediante Kubernetes.');
+doc.moveDown(0.04);
+doc.font('Helvetica-Oblique').fontSize(7.5).fillColor(gray).text('Flujo principal: El servicio de pedidos se comunica con Billing para calcular tarifas mediante Strategy y posteriormente con Fleet para la asignación. La autenticación se gestiona mediante Auth y JWT.');
+doc.moveDown(0.06);
+
+subTitle('Microservicios E-commerce con RabbitMQ');
+doc.font('Helvetica').fontSize(7.6).fillColor(grayLight).text('2025  |  Java  ·  Spring Boot 3.5  ·  Spring AMQP  ·  PostgreSQL  ·  Docker');
+doc.font('Helvetica').fontSize(7.6).fillColor(grayLight).text('Repositorio: github.com/JairoBonilla2004/microservices-ecommerce-rabbitmq', { link: 'https://github.com/JairoBonilla2004/microservices-ecommerce-rabbitmq' });
+doc.moveDown(0.06);
+bodyText('Desarrollé y trabajé en un sistema basado en una arquitectura orientada a eventos, compuesto por un servicio de pedidos y un servicio de inventario, comunicados mediante RabbitMQ y Topic Exchanges.');
+doc.moveDown(0.05);
+doc.font('Helvetica-Bold').fontSize(7.6).fillColor(dark).text('Mis aportes y características del proyecto:');
+doc.moveDown(0.04);
+bullet('Trabajé con la comunicación entre Order Service e Inventory Service.');
+bullet('Implementé el flujo de eventos: OrderCreated → StockReserved o StockRejected → Estado final CONFIRMED o CANCELLED.');
+bullet('Apliqué principios SOLID y propiedades de consistencia ACID por servicio.');
+bullet('Utilicé Swagger/OpenAPI para documentar las APIs.');
+bullet('Implementé health checks.');
+bullet('Trabajé con Docker Compose para la ejecución de los servicios.');
+doc.moveDown(0.06);
+
+subTitle('Sistema de Votaciones — Conecta Impacto');
+doc.font('Helvetica').fontSize(7.6).fillColor(grayLight).text('2025  |  En producción  |  Next.js  ·  React  ·  Vercel  |  votaciones-ten.vercel.app', { link: 'https://votaciones-ten.vercel.app/' });
+doc.moveDown(0.06);
+bodyText('Participé en el desarrollo de una plataforma web para gestionar procesos de votación universitaria, incluyendo el registro de participantes, la validación y la votación en tiempo real.');
+doc.moveDown(0.04);
+doc.font('Helvetica-Bold').fontSize(7.6).fillColor(dark).text('Mis aportes:');
+doc.moveDown(0.04);
+bullet('Desarrollé funcionalidades utilizando Next.js y React.');
+bullet('Trabajé en la gestión de participantes y procesos de votación.');
+bullet('Desplegué la aplicación en Vercel.');
+doc.moveDown(0.06);
+
+subTitle('CodeDucks — Hackathon ConectaImpacto');
+doc.font('Helvetica').fontSize(7.6).fillColor(grayLight).text('Octubre de 2025  |  Finalista — TOP 5 de 25 equipos  |  ConQuito — 4 y 5 de octubre  |  github.com/AxelHerrera4/Hackaton', { link: 'https://github.com/AxelHerrera4/Hackaton' });
+doc.moveDown(0.06);
+bodyText('Participé en el diseño y prototipado de una solución orientada a la gestión de información y validación de indicadores para organizaciones sociales.');
+doc.moveDown(0.04);
+doc.font('Helvetica-Bold').fontSize(7.6).fillColor(dark).text('Mis aportes:');
+doc.moveDown(0.04);
+bullet('Participé en la creación y el prototipado de una propuesta de innovación social.');
+bullet('Trabajé en una solución orientada a facilitar la gestión de información.');
+bullet('Formé parte del equipo que quedó entre los cinco finalistas de un total de 25 equipos.');
+doc.moveDown(0.06);
+
+subTitle('Capture The Flag — Club de Software ESPE');
+doc.font('Helvetica').fontSize(7.6).fillColor(grayLight).text('2024  |  Finalista  |  Ciberseguridad  |  Referencia: instagram.com/p/C5CU2G5uvID/', { link: 'https://www.instagram.com/p/C5CU2G5uvID/' });
+doc.moveDown(0.06);
+bullet('Desarrollé mis habilidades de análisis y resolución de problemas.');
+bullet('Participé en retos técnicos de ciberseguridad.');
+bullet('Formé parte del grupo de finalistas de la competencia.');
+doc.moveDown(0.04);
+
+// ================= HABILIDADES TÉCNICAS =================
+sectionTitle('Habilidades técnicas');
+
+doc.font('Helvetica-Bold').fontSize(7.6).fillColor(dark).text('Lenguajes de programación y consulta');
+doc.moveDown(0.04);
+bodyText('C  /  C++  ·  Java  ·  PHP  ·  JavaScript  ·  Python  ·  SQL  ·  NoSQL');
+doc.moveDown(0.04);
+
+doc.font('Helvetica-Bold').fontSize(7.6).fillColor(dark).text('Frameworks y tecnologías');
+doc.moveDown(0.04);
+bodyText('React  ·  Node.js  ·  Spring Boot  ·  GraphQL  ·  RabbitMQ  ·  Redis  ·  Docker  ·  Kubernetes  ·  Selenium  ·  Postman  ·  JMeter  ·  Oracle  ·  PostgreSQL  ·  Cassandra  ·  Android Studio  ·  GitHub  ·  Jira');
+doc.moveDown(0.04);
+
+doc.font('Helvetica-Bold').fontSize(7.6).fillColor(dark).text('DevOps, DevSecOps y prácticas de desarrollo');
+doc.moveDown(0.04);
+bodyText('CI/CD  ·  DevOps  ·  DevSecOps  ·  GitHub Actions  ·  GitLab CI  ·  Automatización de pipelines  ·  Docker  ·  Kubernetes  ·  Arquitectura de microservicios  ·  Principios SOLID  ·  Propiedades ACID');
+doc.moveDown(0.04);
+
+doc.font('Helvetica-Bold').fontSize(7.6).fillColor(dark).text('Herramientas y colaboración');
+doc.moveDown(0.04);
+bodyText('Git y GitHub  ·  Postman  ·  Jira  ·  Documentación técnica  ·  Trabajo colaborativo y metodologías de desarrollo');
+doc.moveDown(0.04);
+
+// ================= HABILIDADES BLANDAS =================
+sectionTitle('Habilidades blandas');
+bulletBoldTitle('Creatividad', 'Propongo soluciones originales y prácticas para resolver necesidades reales.');
+bulletBoldTitle('Liderazgo', 'Coordino actividades y colaboro con otras personas de manera empática.');
+bulletBoldTitle('Trabajo en equipo', 'Participo activamente en equipos y contribuyo al cumplimiento de objetivos comunes.');
+bulletBoldTitle('Aprendizaje continuo', 'Busco adquirir nuevos conocimientos y mejorar constantemente mis habilidades.');
+bulletBoldTitle('Resolución de problemas', 'Analizo situaciones, planteo alternativas y busco soluciones orientadas a resultados.');
+bulletBoldTitle('Responsabilidad', 'Me comprometo con las tareas asignadas, los objetivos y la calidad del trabajo.');
+doc.moveDown(0.05);
+
+// ================= IDIOMAS =================
+sectionTitle('Idiomas');
+bullet('Español: Nativo.');
+bullet('Inglés: Intermedio.');
+doc.moveDown(0.05);
+
+// ================= INFORMACIÓN ADICIONAL =================
+sectionTitle('Información adicional');
+bullet('Ubicación: Quito, Ecuador.');
+bullet('Modalidad de trabajo: Presencial o remoto.');
+bullet('Disponibilidad: Quito, Ecuador.');
+doc.moveDown(0.05);
+
+// ================= ENLACES =================
+sectionTitle('Enlaces');
+doc.font('Helvetica').fontSize(7.5).fillColor(gray);
+linkLine('Correo personal', 'mailto:micaelasalcedo8vof@gmail.com');
+doc.text('  micaelasalcedo8vof@gmail.com', { link: 'mailto:micaelasalcedo8vof@gmail.com' });
+linkLine('Correo institucional', 'mailto:mssalcedo2@espe.edu.ec');
+doc.text('  mssalcedo2@espe.edu.ec', { link: 'mailto:mssalcedo2@espe.edu.ec' });
+linkLine('GitHub', 'https://github.com/SalcedoMicaela');
+linkLine('LinkedIn', 'https://www.linkedin.com/in/micaela-salcedo-07a693268');
+linkLine('Portafolio', 'https://portafolio-micaela-salcedo.vercel.app/');
 
 doc.end();
 console.log('PDF generado en', out);
