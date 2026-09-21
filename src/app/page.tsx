@@ -573,7 +573,19 @@ export default function Home() {
               <a
                 href="/SalcedoMicaela_CV.pdf"
                 download="SalcedoMicaela_CV.pdf"
-                className="rounded-full border border-zinc-900 bg-white px-6 py-3.5 text-sm font-semibold dark:border-white dark:bg-zinc-900 dark:text-white"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="relative z-10 rounded-full border border-zinc-900 bg-white px-6 py-3.5 text-sm font-semibold dark:border-white dark:bg-zinc-900 dark:text-white cursor-pointer touch-manipulation"
+                onClick={(e) => {
+                  // Fallback para iOS/móviles donde download no funciona: abre en nueva pestaña
+                  try {
+                    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+                    if (isIOS) {
+                      e.preventDefault();
+                      window.open('/SalcedoMicaela_CV.pdf', '_blank');
+                    }
+                  } catch {}
+                }}
               >
                 Descargar CV ↓
               </a>
@@ -1150,7 +1162,7 @@ export default function Home() {
           </a>
         </p>
         <p className="mt-2">
-          <a href="/SalcedoMicaela_CV.pdf" download="SalcedoMicaela_CV.pdf" className="inline-flex items-center gap-1 rounded-full border border-zinc-200 px-3 py-1 text-xs font-semibold hover:bg-zinc-50 dark:border-zinc-700 dark:hover:bg-zinc-800">
+          <a href="/SalcedoMicaela_CV.pdf" download="SalcedoMicaela_CV.pdf" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 rounded-full border border-zinc-200 px-3 py-1 text-xs font-semibold hover:bg-zinc-50 dark:border-zinc-700 dark:hover:bg-zinc-800 cursor-pointer touch-manipulation">
             Descargar CV — SalcedoMicaela_CV.pdf
           </a>
         </p>
