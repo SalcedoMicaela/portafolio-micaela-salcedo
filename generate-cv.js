@@ -4,10 +4,15 @@ const path = require('path');
 
 const outDir = path.join(__dirname, 'public');
 if (!fs.existsSync(outDir)) fs.mkdirSync(outDir, { recursive: true });
-const out = path.join(outDir, 'HojaDeVida.pdf');
+const out = path.join(outDir, 'SalcedoMicaela_CV.pdf');
+const outLegacy = path.join(outDir, 'HojaDeVida.pdf');
 
 const doc = new PDFDocument({ size: 'A4', margins: { top: 40, bottom: 40, left: 50, right: 50 } });
-doc.pipe(fs.createWriteStream(out));
+const stream = fs.createWriteStream(out);
+doc.pipe(stream);
+stream.on('finish', () => {
+  try { fs.copyFileSync(out, outLegacy); console.log('PDF legacy copiado en', outLegacy); } catch (e) { console.error('copy error', e); }
+});
 
 // Colors Harvard style - clean, professional
 const violet = '#7C3AED';
@@ -19,6 +24,7 @@ doc.fontSize(22).font('Helvetica-Bold').fillColor(dark).text('MICAELA STEFANIA S
 doc.moveDown(0.3);
 doc.fontSize(9).font('Helvetica').fillColor(gray).text('Ingeniería de Software • Universidad de las Fuerzas Armadas ESPE  |  Quito, Ecuador', { align: 'center' });
 doc.fontSize(8).fillColor(violet).text('micaelasalcedo8vof@gmail.com  •  mssalcedo2@espe.edu.ec  •  0962846565  •  github.com/SalcedoMicaela  •  linkedin.com/in/micaela-salcedo-07a693268', { align: 'center' });
+doc.fontSize(7).fillColor(violet).text('Portafolio: https://portafolio-micaela-salcedo.vercel.app/', { align: 'center', link: 'https://portafolio-micaela-salcedo.vercel.app/' });
 doc.moveDown(0.5);
 doc.moveTo(50, doc.y).lineTo(545, doc.y).strokeColor('#E4E4E7').lineWidth(1).stroke();
 doc.moveDown(0.8);

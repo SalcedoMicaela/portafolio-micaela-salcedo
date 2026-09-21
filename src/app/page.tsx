@@ -553,6 +553,9 @@ export default function Home() {
               Kubernetes. En constante aprendizaje y evolución tecnológica.
             </p>
             <p key={quoteIndex} className="mt-3 animate-fade-in border-l-2 border-violet-300 pl-3 text-sm italic text-zinc-500 dark:text-zinc-400">“{quotes[quoteIndex]}”</p>
+            <a href="https://portafolio-micaela-salcedo.vercel.app/" target="_blank" className="mt-3 inline-flex items-center gap-1.5 text-xs font-semibold text-violet-600 hover:text-violet-700 dark:text-violet-400">
+              <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" /> https://portafolio-micaela-salcedo.vercel.app/
+            </a>
             <div className="mt-8 flex flex-wrap gap-3">
               <a
                 href="#proyectos"
@@ -568,8 +571,8 @@ export default function Home() {
                 GitHub
               </a>
               <a
-                href="/HojaDeVida.pdf"
-                download="CV-Micaela-Salcedo.pdf"
+                href="/SalcedoMicaela_CV.pdf"
+                download="SalcedoMicaela_CV.pdf"
                 className="rounded-full border border-zinc-900 bg-white px-6 py-3.5 text-sm font-semibold dark:border-white dark:bg-zinc-900 dark:text-white"
               >
                 Descargar CV ↓
@@ -1071,6 +1074,13 @@ export default function Home() {
                       GitHub
                     </a>
                   </div>
+                  <a
+                    href="https://portafolio-micaela-salcedo.vercel.app/"
+                    target="_blank"
+                    className="flex items-center justify-center gap-2 rounded-xl border border-violet-200 bg-violet-50 px-4 py-3 text-sm font-bold text-violet-700 hover:bg-violet-100 dark:border-violet-800 dark:bg-violet-950/30 dark:text-violet-300"
+                  >
+                    🌐 https://portafolio-micaela-salcedo.vercel.app/
+                  </a>
                 </div>
               </div>
               <form
@@ -1133,6 +1143,16 @@ export default function Home() {
         <p className="mt-1">
           micaelasalcedo8vof@gmail.com • mssalcedo2@espe.edu.ec •
           github.com/SalcedoMicaela
+        </p>
+        <p className="mt-2">
+          <a href="https://portafolio-micaela-salcedo.vercel.app/" target="_blank" className="font-semibold text-violet-600 hover:underline dark:text-violet-400">
+            https://portafolio-micaela-salcedo.vercel.app/
+          </a>
+        </p>
+        <p className="mt-2">
+          <a href="/SalcedoMicaela_CV.pdf" download="SalcedoMicaela_CV.pdf" className="inline-flex items-center gap-1 rounded-full border border-zinc-200 px-3 py-1 text-xs font-semibold hover:bg-zinc-50 dark:border-zinc-700 dark:hover:bg-zinc-800">
+            Descargar CV — SalcedoMicaela_CV.pdf
+          </a>
         </p>
       </footer>
 

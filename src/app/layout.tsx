@@ -5,17 +5,23 @@ import "./globals.css";
 const inter = Inter({ subsets: ["latin"], variable: "--font-inter", display: "swap" });
 const jetbrains = JetBrains_Mono({ subsets: ["latin"], variable: "--font-mono", display: "swap" });
 
+const SITE_URL = "https://portafolio-micaela-salcedo.vercel.app";
+
 export const metadata: Metadata = {
+  metadataBase: new URL(SITE_URL),
   title: "Micaela Salcedo — Desarrolladora de Software",
   description:
     "Portafolio de Micaela Stefania Salcedo — Estudiante de Ingeniería de Software (ESPE). React, Node.js, Python, Java. Proyectos FEFAST, Sistema de Votaciones Conecta Impacto, CodeDucks Hackathon y más.",
   keywords: ["Micaela Salcedo", "Desarrolladora", "Software", "React", "Node.js", "ESPE", "Portafolio"],
   authors: [{ name: "Micaela Salcedo" }],
+  alternates: { canonical: SITE_URL },
   openGraph: {
     title: "Micaela Salcedo — Desarrolladora de Software",
     description: "Creativa, responsable y apasionada por crear soluciones prácticas e innovadoras.",
     type: "website",
     locale: "es_EC",
+    url: SITE_URL,
+    siteName: "Portafolio Micaela Salcedo",
   },
 };
 
