@@ -1086,13 +1086,6 @@ export default function Home() {
                       GitHub
                     </a>
                   </div>
-                  <a
-                    href="https://portafolio-micaela-salcedo.vercel.app/"
-                    target="_blank"
-                    className="flex items-center justify-center gap-2 rounded-xl border border-violet-200 bg-violet-50 px-4 py-3 text-sm font-bold text-violet-700 hover:bg-violet-100 dark:border-violet-800 dark:bg-violet-950/30 dark:text-violet-300"
-                  >
-                    🌐 https://portafolio-micaela-salcedo.vercel.app/
-                  </a>
                 </div>
               </div>
               <form
