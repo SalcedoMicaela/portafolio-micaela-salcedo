@@ -578,9 +578,6 @@ export default function Home() {
               Kubernetes. En constante aprendizaje y evolución tecnológica.
             </p>
             <p key={quoteIndex} className="mt-3 animate-fade-in border-l-2 border-violet-300 pl-3 text-sm italic text-zinc-500 dark:text-zinc-400">“{quotes[quoteIndex]}”</p>
-            <a href="https://portafolio-micaela-salcedo.vercel.app/" target="_blank" className="mt-3 inline-flex items-center gap-1.5 text-xs font-semibold text-violet-600 hover:text-violet-700 dark:text-violet-400">
-              <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" /> https://portafolio-micaela-salcedo.vercel.app/
-            </a>
             <div className="mt-8 flex flex-wrap gap-3">
               <a
                 href="#proyectos"
