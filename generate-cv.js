@@ -69,7 +69,7 @@ hr();
 
 // ================= PERFIL =================
 sectionTitle('Perfil profesional');
-body('Ingeniera de Software (ESPE) Full Stack con experiencia en arquitectura y sistemas distribuidos. Trabajo con microservicios, DevOps/DevSecOps y automatización (Java/Spring Boot, React/Node.js, PostgreSQL, RabbitMQ, GraphQL, Docker/Kubernetes). Creativa, resolutiva y orientada a soluciones escalables. Busco aportar, asumir retos y crecer profesionalmente.');
+body('Ingeniera de Software (ESPE) Full Stack con experiencia en arquitectura y sistemas distribuidos. Trabajo con microservicios, DevOps/DevSecOps y automatización (Java/Spring Boot, React/Angular/Node.js, PostgreSQL, RabbitMQ, GraphQL, Docker/Kubernetes). Creativa, resolutiva y orientada a soluciones escalables. Busco aportar, asumir retos y crecer profesionalmente.');
  
 // ================= EDUCACIÓN =================
 sectionTitle('Educación');
@@ -147,7 +147,7 @@ doc.moveDown(0.15);
 body('C / C++  ·  Java  ·  PHP  ·  JavaScript  ·  Python  ·  SQL  ·  NoSQL');
 doc.font('Helvetica-Bold').fontSize(8).fillColor(dark).text('Frameworks y tecnologías');
 doc.moveDown(0.15);
-body('React  ·  Node.js  ·  Spring Boot  ·  GraphQL  ·  RabbitMQ  ·  Redis  ·  Docker  ·  Kubernetes  ·  Selenium  ·  Postman  ·  JMeter  ·  Oracle  ·  PostgreSQL  ·  Cassandra  ·  Android Studio  ·  GitHub  ·  Jira');
+body('React  ·  Angular  ·  PrimeNG  ·  Node.js  ·  Spring Boot  ·  GraphQL  ·  RabbitMQ  ·  Redis  ·  Docker  ·  Kubernetes  ·  Selenium  ·  Postman  ·  JMeter  ·  Oracle  ·  PostgreSQL  ·  Cassandra  ·  Android Studio  ·  GitHub  ·  Jira');
 doc.font('Helvetica-Bold').fontSize(8).fillColor(dark).text('DevOps y prácticas');
 doc.moveDown(0.15);
 body('CI/CD  ·  DevOps  ·  DevSecOps  ·  GitHub Actions  ·  GitLab CI  ·  Pipelines  ·  Microservicios  ·  SOLID  ·  ACID');

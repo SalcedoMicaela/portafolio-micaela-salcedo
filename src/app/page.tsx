@@ -113,6 +113,8 @@ const skills = {
   ],
   tecnologias: [
     "React",
+    "Angular",
+    "PrimeNG",
     "Node.js",
     "Docker",
     "Selenium",
