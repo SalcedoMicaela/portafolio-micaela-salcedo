@@ -69,7 +69,7 @@ hr();
 
 // ================= PERFIL =================
 sectionTitle('Perfil profesional');
-body('Ingeniera de Software (ESPE) Full Stack con experiencia en arquitectura y sistemas distribuidos. Trabajo con microservicios, DevOps/DevSecOps y automatización (Java/Spring Boot, React/Angular/Node.js, PostgreSQL, RabbitMQ, GraphQL, Docker/Kubernetes). Creativa, resolutiva y orientada a soluciones escalables. Busco aportar, asumir retos y crecer profesionalmente.');
+body('Ingeniera de Software de la Universidad de las Fuerzas Armadas ESPE, con experiencia en desarrollo Full Stack, arquitectura de software y construcción de aplicaciones web y sistemas distribuidos. He participado en proyectos académicos y profesionales utilizando Java, Spring Boot, React, Angular, Node.js, PostgreSQL y tecnologías de contenedorización y automatización como Docker y Kubernetes. Cuento con experiencia en desarrollo de APIs REST, microservicios, integración de servicios, bases de datos y prácticas de CI/CD y DevSecOps. Me caracterizo por el aprendizaje continuo, la resolución de problemas y el trabajo colaborativo, con interés en seguir creciendo en desarrollo de software y aportar en la construcción de soluciones escalables y mantenibles.');
  
 // ================= EDUCACIÓN =================
 sectionTitle('Educación');

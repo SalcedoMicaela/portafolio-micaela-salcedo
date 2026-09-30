@@ -669,11 +669,19 @@ export default function Home() {
               <span className="text-zinc-400">impacto real</span>
             </h2>
             <p className="mt-4 leading-relaxed text-zinc-600 dark:text-zinc-400">
-              Creativa con fuerte inclinación por buscar soluciones innovadoras
-              ante los retos. Me gusta aprender constantemente y adquirir nuevas
-              habilidades técnicas y personales. Responsable, con buenas
-              relaciones interpersonales y capacidad de liderazgo fomentando el
-              trabajo en equipo.
+              Ingeniera de Software de la Universidad de las Fuerzas Armadas
+              ESPE, con experiencia en desarrollo Full Stack, arquitectura de
+              software y construcción de aplicaciones web y sistemas
+              distribuidos. He participado en proyectos académicos y
+              profesionales utilizando Java, Spring Boot, React, Angular,
+              Node.js, PostgreSQL y tecnologías de contenedorización y
+              automatización como Docker y Kubernetes. Cuento con experiencia
+              en desarrollo de APIs REST, microservicios, integración de
+              servicios, bases de datos y prácticas de CI/CD y DevSecOps. Me
+              caracterizo por el aprendizaje continuo, la resolución de
+              problemas y el trabajo colaborativo, con interés en seguir
+              creciendo en desarrollo de software y aportar en la construcción
+              de soluciones escalables y mantenibles.
             </p>
             <div className="mt-6 flex flex-wrap gap-2">
               <span className="rounded-full bg-violet-50 px-3 py-1 text-xs font-semibold text-violet-700 dark:bg-violet-900/30 dark:text-violet-300">
