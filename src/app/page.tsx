@@ -20,9 +20,31 @@ const IMAGES = {
   ctf: "especoncurso",
   entrega: "mensajeria",
   ecommerce: "ecomercerabbit",
+  fitosanitario: "fitosanitario",
 };
 
 const projects = [
+  {
+    title: "Sistema Integral de Gestión Fitosanitaria — Interculturalidad",
+    description:
+      "Plataforma para monitoreo, reporte y control de plagas y enfermedades en cultivos. Backend NestJS + PostgreSQL + Drizzle ORM + MinIO, frontend web Angular 19 + PrimeNG y app móvil Expo React Native offline-first (SQLite, TTS, captura de fotos/audio). Swagger, Docker, CI/CD con GitHub Actions y deploy en Google Cloud.",
+    image: IMAGES.fitosanitario,
+    tags: [
+      "Angular 19",
+      "PrimeNG",
+      "NestJS",
+      "PostgreSQL",
+      "Drizzle ORM",
+      "MinIO",
+      "Expo React Native",
+      "Docker",
+      "Swagger",
+      "Google Cloud",
+    ],
+    links: {},
+    highlight: true,
+    badge: "Full Stack • Angular + NestJS",
+  },
   {
     title: "EntregaExpress_P2 — Sistema Logística Distribuido",
     description:
@@ -116,6 +138,7 @@ const skills = {
     "Angular",
     "PrimeNG",
     "Node.js",
+    "NestJS",
     "Docker",
     "Selenium",
     "Postman",

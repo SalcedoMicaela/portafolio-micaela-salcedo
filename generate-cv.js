@@ -103,6 +103,12 @@ techLine('Tecnologías', 'React  ·  Node.js  ·  PostgreSQL  ·  Accesibilidad'
 // ================= PROYECTOS =================
 sectionTitle('Proyectos destacados');
 
+subTitle('Sistema Integral de Gestión Fitosanitaria — Interculturalidad');
+meta('2025  |  Angular 19 · PrimeNG · NestJS · PostgreSQL · Drizzle ORM · MinIO · Expo React Native · Docker · Google Cloud  |  Repositorio privado');
+bullet('Plataforma de monitoreo, reporte y control de plagas y enfermedades en cultivos: API NestJS + PostgreSQL/Drizzle + MinIO, web Angular 19 + PrimeNG y app móvil Expo offline-first.');
+bullet('Swagger/OpenAPI, SQLite en móvil, TTS/accesibilidad, CI/CD con GitHub Actions y deploy en Google Cloud.');
+doc.moveDown(0.3);
+
 subTitle('EntregaExpress_P2 — Sistema de Gestión Logística Distribuido');
 meta('2025  |  Java 21 · Spring Boot 4 · Microservicios · RabbitMQ · GraphQL · Kubernetes · PostgreSQL · JWT · Redis  |  github.com/AxelHerrera4/EntregaExpress_P2');
 doc.font('Helvetica').fontSize(7.5).fillColor(grayLight).text('Repositorio: https://github.com/AxelHerrera4/EntregaExpress_P2', { link: 'https://github.com/AxelHerrera4/EntregaExpress_P2', lineGap: 1 });
@@ -147,7 +153,7 @@ doc.moveDown(0.15);
 body('C / C++  ·  Java  ·  PHP  ·  JavaScript  ·  Python  ·  SQL  ·  NoSQL');
 doc.font('Helvetica-Bold').fontSize(8).fillColor(dark).text('Frameworks y tecnologías');
 doc.moveDown(0.15);
-body('React  ·  Angular  ·  PrimeNG  ·  Node.js  ·  Spring Boot  ·  GraphQL  ·  RabbitMQ  ·  Redis  ·  Docker  ·  Kubernetes  ·  Selenium  ·  Postman  ·  JMeter  ·  Oracle  ·  PostgreSQL  ·  Cassandra  ·  Android Studio  ·  GitHub  ·  Jira');
+body('React  ·  Angular  ·  PrimeNG  ·  Node.js  ·  NestJS  ·  Spring Boot  ·  GraphQL  ·  RabbitMQ  ·  Redis  ·  Docker  ·  Kubernetes  ·  Selenium  ·  Postman  ·  JMeter  ·  Oracle  ·  PostgreSQL  ·  Drizzle ORM  ·  MinIO  ·  Cassandra  ·  Android Studio  ·  GitHub  ·  Jira');
 doc.font('Helvetica-Bold').fontSize(8).fillColor(dark).text('DevOps y prácticas');
 doc.moveDown(0.15);
 body('CI/CD  ·  DevOps  ·  DevSecOps  ·  GitHub Actions  ·  GitLab CI  ·  Pipelines  ·  Microservicios  ·  SOLID  ·  ACID');
